@@ -13,44 +13,108 @@ import com.optimagrowth.license.repository.LicenseRepository;
 @Service
 public class LicenseService {
 
-	@Autowired
-	MessageSource messages;
+    @Autowired
+    MessageSource messages;
 
-	@Autowired
-	private LicenseRepository licenseRepository;
+    @Autowired
+    private LicenseRepository licenseRepository;
 
-	@Autowired
-	ServiceConfig config;
+    @Autowired
+    ServiceConfig config;
 
 
-	public License getLicense(String licenseId, String organizationId){
-		License license = licenseRepository.findByOrganizationIdAndLicenseId(organizationId, licenseId);
-		if (null == license) {
-			throw new IllegalArgumentException(String.format(messages.getMessage("license.search.error.message", null, null),licenseId, organizationId));	
-		}
-		return license.withComment(config.getProperty());
-	}
+    public License getLicense(String licenseId, String organizationId) {
+        License license =
+                licenseRepository.findByOrganizationIdAndLicenseId(
+                        organizationId,
+                        licenseId
+                );
 
-	public License createLicense(License license){
-		license.setLicenseId(UUID.randomUUID().toString());
-		licenseRepository.save(license);
+        if (license == null) {
+            throw new IllegalArgumentException(
+                    String.format(
+                            messages.getMessage(
+                                    "license.search.error.message",
+                                    null,
+                                    null
+                            ),
+                            licenseId,
+                            organizationId
+                    )
+            );
+        }
 
-		return license.withComment(config.getProperty());
-	}
+        return license.withComment(config.getProperty());
+    }
 
-	public License updateLicense(License license){
-		licenseRepository.save(license);
 
-		return license.withComment(config.getProperty());
-	}
+    public License createLicense(License license) {
+        license.setLicenseId(UUID.randomUUID().toString());
+        licenseRepository.save(license);
 
-	public String deleteLicense(String licenseId){
-		String responseMessage = null;
-		License license = new License();
-		license.setLicenseId(licenseId);
-		licenseRepository.delete(license);
-		responseMessage = String.format(messages.getMessage("license.delete.message", null, null),licenseId);
-		return responseMessage;
+        return license.withComment(config.getProperty());
+    }
 
-	}
+
+    public License updateLicense(License license) {
+
+        License existingLicense =
+                licenseRepository.findByOrganizationIdAndLicenseId(
+                        license.getOrganizationId(),
+                        license.getLicenseId()
+                );
+
+        if (existingLicense == null) {
+            throw new IllegalArgumentException(
+                    String.format(
+                            messages.getMessage(
+                                    "license.search.error.message",
+                                    null,
+                                    null
+                            ),
+                            license.getLicenseId(),
+                            license.getOrganizationId()
+                    )
+            );
+        }
+
+        licenseRepository.save(license);
+
+        return license.withComment(config.getProperty());
+    }
+
+
+    public String deleteLicense(String licenseId, String organizationId) {
+
+        License license =
+                licenseRepository.findByOrganizationIdAndLicenseId(
+                        organizationId,
+                        licenseId
+                );
+
+        if (license == null) {
+            throw new IllegalArgumentException(
+                    String.format(
+                            messages.getMessage(
+                                    "license.search.error.message",
+                                    null,
+                                    null
+                            ),
+                            licenseId,
+                            organizationId
+                    )
+            );
+        }
+
+        licenseRepository.delete(license);
+
+        return String.format(
+                messages.getMessage(
+                        "license.delete.message",
+                        null,
+                        null
+                ),
+                licenseId
+        );
+    }
 }
