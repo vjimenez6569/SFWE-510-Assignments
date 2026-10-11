@@ -8,7 +8,7 @@ spring:
       server:
         git:
           uri: https://github.com/vjimenez6569/SFWE-510-Assignments.git
-          default-label: Assignment-6
+          default-label: main
           search-paths:
             - 'Assignment 6/configserver/src/main/resources/config'
           clone-on-start: true
